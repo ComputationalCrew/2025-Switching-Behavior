@@ -74,6 +74,15 @@ summary(susceptibility.to.r6.Strains_aov)
 susceptibility.to.nonr6.Strains_aov <- aov(MLR_SB$susceptibility.to.nonr6.Strains~factor(MLR_SB$group)) 
 summary(susceptibility.to.nonr6.Strains_aov)
 
+# Table 2. Distribution of a categorical variable by changing pesticide
+
+BLR_SB <- read.csv("C:/Users/jaeyoung.hwang/Desktop/USDA/2023/Project/SwitchingBehavior/Data/powdery_mildew_fungicide_record_database_SB_V7_Working.csv", check.names=FALSE)
+
+with(BLR_SB, table(pruning, how)) 
+with(BLR_SB, table(susceptibility.to.r6.Strains, how)) 
+with(BLR_SB, table(susceptibility.to.nonr6.Strains, how)) 
+with(BLR_SB, table(synthetic, how)) 
+with(BLR_SB, table(nonsynthetic, how)) 
 
 # Supp. Fig. 2. Correlation matrix
 
