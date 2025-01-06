@@ -74,3 +74,17 @@ summary(susceptibility.to.r6.Strains_aov)
 susceptibility.to.nonr6.Strains_aov <- aov(MLR_SB$susceptibility.to.nonr6.Strains~factor(MLR_SB$group)) 
 summary(susceptibility.to.nonr6.Strains_aov)
 
+
+# Supp. Fig. 2. Correlation matrix
+
+MLR_SB <- as.data.frame(MLR_SB[1 : 9])
+MLR_SB <- as.matrix(MLR_SB[,])
+
+colnames(MLR_SB) <- c('Spray date', 'First spray date', 'Disease incidence', 'Disease incidence in May',
+                      'Flag shoot incidence ', 'Previous flag shoot incidence',  
+                      'Pruning thoroughness', 'Susceptibility V6 strains',
+                      'Susceptibility non-V6 strains')
+
+png(file = "SpearmanCorr.png",  width=2300, height=2000, res=300)
+corrplot(cor(MLR_SB[, c(1:9)]), method="color", cor.method = "spearman", type = 'upper', diag = FALSE)
+dev.off()
