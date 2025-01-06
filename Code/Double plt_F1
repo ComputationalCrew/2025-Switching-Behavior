@@ -1,0 +1,185 @@
+# Loading library
+library(magrittr) # needs to be run every time you start R and want to use %>%
+library(dplyr)    # alternatively, this also loads %>%
+library(ggplot2)
+library(gridExtra)
+
+# plot
+
+dfplot <- read.csv(".../powdery_mildew_fungicide_record_database_SB_V7_Multinomial.csv", check.names=FALSE)
+
+# mildew.incidence vs. spray.date
+
+# Step 1. Plot each dimension's boxplot separately:
+
+plot.x <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = mildew.incidence, group = group))
+plot.y <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = spray.date, group = group))
+
+grid.arrange(plot.x, plot.y, ncol=2) # visual verification of the boxplots
+
+# Step 2. Obtain the calculated boxplot values (including outliers) in 1 data frame:
+
+plot.x <- layer_data(plot.x)[,1:6]
+plot.y <- layer_data(plot.y)[,1:6]
+colnames(plot.x) <- paste0("x.", gsub("y", "", colnames(plot.x)))
+colnames(plot.y) <- paste0("y.", gsub("y", "", colnames(plot.y)))
+df <- cbind(plot.x, plot.y); rm(plot.x, plot.y)
+df$category <- sort(unique(dfplot$group))
+
+df
+
+# Step 3. Create a separate data frame for outliers:
+
+df.outliers <- df %>%
+  select(category, x.middle, x.outliers, y.middle, y.outliers) %>%
+  data.table::data.table()
+
+df.outliers 
+
+
+# Step 4. Putting it all together in one plot:
+
+ggplot(df, aes(fill = category, color = category)) +
+  
+  # 2D box defined by the Q1 & Q3 values in each dimension, with outline
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), alpha = 0.3) +
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), 
+            color = "black", fill = NA) +
+  
+  # whiskers for x-axis dimension with ends
+  geom_segment(aes(x = x.min, y = y.middle, xend = x.max, yend = y.middle)) + #whiskers
+  geom_segment(aes(x = x.min, y = y.lower, xend = x.min, yend = y.upper)) + #lower end
+  geom_segment(aes(x = x.max, y = y.lower, xend = x.max, yend = y.upper)) + #upper end
+  
+  # whiskers for y-axis dimension with ends
+  geom_segment(aes(x = x.middle, y = y.min, xend = x.middle, yend = y.max)) + #whiskers
+  geom_segment(aes(x = x.lower, y = y.min, xend = x.upper, yend = y.min)) + #lower end
+  geom_segment(aes(x = x.lower, y = y.max, xend = x.upper, yend = y.max)) + #upper end
+  
+  # outliers
+  # geom_point(data = df.outliers, aes(x = x.outliers, y = y.middle), size = 3, shape = 1) + # x-direction
+  # geom_point(data = df.outliers, aes(x = x.middle, y = y.outliers), size = 3, shape = 1) + # y-direction
+  
+  xlab("Disease incidence") + ylab("First spray date") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 200)) +
+  theme_classic()
+ggsave("spray.date_mildew.incidence.png", dpi=1000, height=4, width=5, units="in", bg = "white")
+
+
+
+# first.spray.date vs. mildew.incidence
+
+# Step 1. Plot each dimension's boxplot separately:
+
+plot.x <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = mildew.incidence, group = group))
+plot.y <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = first.spray.date, group = group))
+
+grid.arrange(plot.x, plot.y, ncol=2) # visual verification of the boxplots
+
+# Step 2. Obtain the calculated boxplot values (including outliers) in 1 data frame:
+
+plot.x <- layer_data(plot.x)[,1:6]
+plot.y <- layer_data(plot.y)[,1:6]
+colnames(plot.x) <- paste0("x.", gsub("y", "", colnames(plot.x)))
+colnames(plot.y) <- paste0("y.", gsub("y", "", colnames(plot.y)))
+df <- cbind(plot.x, plot.y); rm(plot.x, plot.y)
+df$category <- sort(unique(dfplot$group))
+
+df
+
+# Step 3. Create a separate data frame for outliers:
+
+df.outliers <- df %>%
+  select(category, x.middle, x.outliers, y.middle, y.outliers) %>%
+  data.table::data.table()
+
+df.outliers 
+
+
+# Step 4. Putting it all together in one plot:
+
+ggplot(df, aes(fill = category, color = category)) +
+  
+  # 2D box defined by the Q1 & Q3 values in each dimension, with outline
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), alpha = 0.3) +
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), 
+            color = "black", fill = NA) +
+  
+  # whiskers for x-axis dimension with ends
+  geom_segment(aes(x = x.min, y = y.middle, xend = x.max, yend = y.middle)) + #whiskers
+  geom_segment(aes(x = x.min, y = y.lower, xend = x.min, yend = y.upper)) + #lower end
+  geom_segment(aes(x = x.max, y = y.lower, xend = x.max, yend = y.upper)) + #upper end
+  
+  # whiskers for y-axis dimension with ends
+  geom_segment(aes(x = x.middle, y = y.min, xend = x.middle, yend = y.max)) + #whiskers
+  geom_segment(aes(x = x.lower, y = y.min, xend = x.upper, yend = y.min)) + #lower end
+  geom_segment(aes(x = x.lower, y = y.max, xend = x.upper, yend = y.max)) + #upper end
+  
+  # outliers
+  # geom_point(data = df.outliers, aes(x = x.outliers, y = y.middle), size = 3, shape = 1) + # x-direction
+  # geom_point(data = df.outliers, aes(x = x.middle, y = y.outliers), size = 3, shape = 1) + # y-direction
+  
+  xlab("Disease incidence") + ylab("First spray date") +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 200)) +
+  theme_classic()
+ggsave("first.spray.date_mildew.incidence.png", dpi=1000, height=4, width=5, units="in", bg = "white")
+
+
+
+# first.spray.date vs. spray.date
+
+# Step 1. Plot each dimension's boxplot separately:
+
+plot.x <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = first.spray.date, group = group))
+plot.y <- ggplot(dfplot) + geom_boxplot(aes(x= group, y = spray.date, group = group))
+
+grid.arrange(plot.x, plot.y, ncol=2) # visual verification of the boxplots
+
+# Step 2. Obtain the calculated boxplot values (including outliers) in 1 data frame:
+
+plot.x <- layer_data(plot.x)[,1:6]
+plot.y <- layer_data(plot.y)[,1:6]
+colnames(plot.x) <- paste0("x.", gsub("y", "", colnames(plot.x)))
+colnames(plot.y) <- paste0("y.", gsub("y", "", colnames(plot.y)))
+df <- cbind(plot.x, plot.y); rm(plot.x, plot.y)
+df$category <- sort(unique(dfplot$group))
+
+df
+
+# Step 3. Create a separate data frame for outliers:
+
+df.outliers <- df %>%
+  select(category, x.middle, x.outliers, y.middle, y.outliers) %>%
+  data.table::data.table()
+
+df.outliers 
+
+
+# Step 4. Putting it all together in one plot:
+
+ggplot(df, aes(fill = category, color = category)) +
+  
+  # 2D box defined by the Q1 & Q3 values in each dimension, with outline
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), alpha = 0.3) +
+  geom_rect(aes(xmin = x.lower, xmax = x.upper, ymin = y.lower, ymax = y.upper), 
+            color = "black", fill = NA) +
+  
+  # whiskers for x-axis dimension with ends
+  geom_segment(aes(x = x.min, y = y.middle, xend = x.max, yend = y.middle)) + #whiskers
+  geom_segment(aes(x = x.min, y = y.lower, xend = x.min, yend = y.upper)) + #lower end
+  geom_segment(aes(x = x.max, y = y.lower, xend = x.max, yend = y.upper)) + #upper end
+  
+  # whiskers for y-axis dimension with ends
+  geom_segment(aes(x = x.middle, y = y.min, xend = x.middle, yend = y.max)) + #whiskers
+  geom_segment(aes(x = x.lower, y = y.min, xend = x.upper, yend = y.min)) + #lower end
+  geom_segment(aes(x = x.lower, y = y.max, xend = x.upper, yend = y.max)) + #upper end
+  
+  # outliers
+  # geom_point(data = df.outliers, aes(x = x.outliers, y = y.middle), size = 3, shape = 1) + # x-direction
+  # geom_point(data = df.outliers, aes(x = x.middle, y = y.outliers), size = 3, shape = 1) + # y-direction
+  
+  xlab("First spray date") + ylab("Spray date") +
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 200)) +
+  theme_classic()
+ggsave("first.spray.date_spray.date.png", dpi=1000, height=4, width=5, units="in", bg = "white")
+
